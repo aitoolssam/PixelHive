@@ -61,10 +61,18 @@ def check_placement_validity(game_state, item_type, pos):
 class Game:
     def __init__(self):
         pygame.init()
-        # Consider adding sound initialization later: pygame.mixer.init()
+        pygame.mixer.init()  # Initialize the sound system
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Pixel Hives - A Beekeeper's Story")
         self.clock = pygame.time.Clock()
+
+        # Load and start background music
+        try:
+            pygame.mixer.music.load('assets/sounds/Among-the-Clouds.mp3')
+            pygame.mixer.music.set_volume(0.5)  # Set to 50% volume
+            pygame.mixer.music.play(-1)  # -1 means loop indefinitely
+        except pygame.error as e:
+            print(f"Could not load or play the music: {e}")
 
         self.asset_manager = AssetManager() # Manage sprites, fonts, sounds
         self.game_state = GameState()
@@ -113,16 +121,26 @@ class Game:
             if event.type == pygame.QUIT:
                 gs.running = False
             if event.type == pygame.KEYDOWN:
-                 if event.key == pygame.K_ESCAPE:
-                      # Escape logic: close market/instructions, or pause menu?
-                      if gs.game_mode == GameMode.MARKET:
-                           gs.game_mode = GameMode.GAMEPLAY
-                      elif gs.game_mode == GameMode.INSTRUCTIONS:
-                            gs.game_mode = GameMode.INTRO
-                      # elif gs.game_mode == GameMode.GAMEPLAY:
-                           # gs.game_mode = GameMode.PAUSED # Add pause state later
-                      else:
-                           gs.running = False # Default: quit if in intro
+                if event.key == pygame.K_ESCAPE:
+                    # Escape logic: close market/instructions, or pause menu?
+                    if gs.game_mode == GameMode.MARKET:
+                        gs.game_mode = GameMode.GAMEPLAY
+                    elif gs.game_mode == GameMode.INSTRUCTIONS:
+                        gs.game_mode = GameMode.INTRO
+                    # elif gs.game_mode == GameMode.GAMEPLAY:
+                        # gs.game_mode = GameMode.PAUSED # Add pause state later
+                    else:
+                        gs.running = False # Default: quit if in intro
+                elif event.key == pygame.K_m:  # 'M' key toggles music
+                    gs.toggle_music()
+                    print("Music:", "On" if gs.music_enabled else "Off")
+                # Volume controls
+                elif event.key == pygame.K_COMMA:  # '<' key decreases volume
+                    gs.set_music_volume(gs.music_volume - 0.1)
+                    print(f"Volume: {int(gs.music_volume * 100)}%")
+                elif event.key == pygame.K_PERIOD:  # '>' key increases volume
+                    gs.set_music_volume(gs.music_volume + 0.1)
+                    print(f"Volume: {int(gs.music_volume * 100)}%")
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Left mouse button
@@ -242,6 +260,7 @@ class Game:
 
 
     def quit_game(self):
+        pygame.mixer.music.stop()  # Stop the music before quitting
         pygame.quit()
         sys.exit()
 

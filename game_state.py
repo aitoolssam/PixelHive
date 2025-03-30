@@ -32,6 +32,10 @@ class GameState:
         self.running = True
         self.delta_time = 0.0 # Time since last frame in seconds
 
+        # Audio State
+        self.music_enabled = True
+        self.music_volume = 0.5  # 50% volume
+
         # Resources
         self.money = 100
         self.honey = 0.0
@@ -135,3 +139,18 @@ class GameState:
              self.bees.remove(entity_to_remove)
              return True
         return False
+
+    def toggle_music(self):
+        """Toggles music on/off."""
+        self.music_enabled = not self.music_enabled
+        if self.music_enabled:
+            pygame.mixer.music.set_volume(self.music_volume)
+            pygame.mixer.music.unpause()
+        else:
+            pygame.mixer.music.pause()
+
+    def set_music_volume(self, volume):
+        """Sets music volume (0.0 to 1.0)."""
+        self.music_volume = max(0.0, min(1.0, volume))
+        if self.music_enabled:
+            pygame.mixer.music.set_volume(self.music_volume)
